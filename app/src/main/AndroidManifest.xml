@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="appsinventiv.wa.sendmsg">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:name="appsinventiv.wa.sendmsg.Utils.ApplicationClass"
+        android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_config"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name="appsinventiv.wa.sendmsg.Sender"></activity>
+
+        <service
+            android:name="appsinventiv.wa.sendmsg.WASenderAccSvc"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/service_config" />
+        </service>
+        <service
+            android:name="appsinventiv.wa.sendmsg.WASenderFgSvc"
+            android:enabled="true"
+            android:exported="false" />
+
+        <activity
+            android:name="appsinventiv.wa.sendmsg.Splash"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="appsinventiv.wa.sendmsg.Login"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name="appsinventiv.wa.sendmsg.Register"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name="appsinventiv.wa.sendmsg.MainActivity"></activity>
+    </application>
+
+</manifest>
