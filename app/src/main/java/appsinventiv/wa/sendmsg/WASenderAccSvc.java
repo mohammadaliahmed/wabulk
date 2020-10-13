@@ -37,10 +37,12 @@ public class WASenderAccSvc extends AccessibilityService {
 
                                                 } catch (IndexOutOfBoundsException e) {
                                                     e.printStackTrace();
+                                                    performGlobalAction(GLOBAL_ACTION_BACK);
                                                 }
                                             }
                                         } catch (IndexOutOfBoundsException e) {
                                             e.printStackTrace();
+                                            performGlobalAction(GLOBAL_ACTION_BACK);
                                         }
                                     }
 
@@ -48,6 +50,7 @@ public class WASenderAccSvc extends AccessibilityService {
                             }
                         } catch (NullPointerException e) {
                             e.printStackTrace();
+                            performGlobalAction(GLOBAL_ACTION_BACK);
                         }
                     }
                 } else if (actname.equals("com.whatsapp.HomeActivity")) {
