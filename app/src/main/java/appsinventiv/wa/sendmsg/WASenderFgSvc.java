@@ -1,13 +1,21 @@
 package appsinventiv.wa.sendmsg;
 
+import static appsinventiv.wa.sendmsg.Sender.numbers;
+
 import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
 import com.opencsv.CSVReader;
@@ -17,6 +25,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import appsinventiv.wa.sendmsg.sender.WhatsappApi;
@@ -28,10 +39,11 @@ import appsinventiv.wa.sendmsg.sender.model.WMessage;
 public class WASenderFgSvc extends Service {
 
     private static final int NOTIFICATION_ID = 12;
-    Notification.Builder notificationBuilder;
+    private static final String NOTIFICATION_CHANNEL_ID = "312312";
     SharedPreferences sp;
     Integer progress = 0;
-    List<String[]> recipientList = new ArrayList<>();
+    List<String> recipientList = new ArrayList<>();
+    private NotificationCompat.Builder notificationBuilder;
 //    String message;
 
     @Override
@@ -39,36 +51,54 @@ public class WASenderFgSvc extends Service {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        notificationBuilder = new Notification.Builder(this);
-        notificationBuilder.setSmallIcon(R.mipmap.ic_launcher);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence channelName = "dss";
+            NotificationChannel serviceChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(serviceChannel);
+        }
+        Intent stopSelf = new Intent(this, WASenderFgSvc.class);
+        stopSelf.setAction("ACTION_STOP_SERVICE");
+        PendingIntent pStopSelf = PendingIntent
+                .getService(this, 0, stopSelf
+                        , PendingIntent.FLAG_CANCEL_CURRENT);
+        notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        NotificationCompat.Action action =
+                new NotificationCompat.Action.Builder(
+                        0, "Close", pStopSelf
+                ).build();
+        Notification notification = notificationBuilder
+                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setContentTitle("Ask Question")
+                .setContentText("Ask Question is running")
+                .addAction(action)
+                .setPriority(Notification.PRIORITY_MIN)
+                .build();
+        notificationManager.notify(1, notification);
+        startForeground(1, notification);
+        notificationManager.cancel(1);
         Boolean start = intent.getBooleanExtra("start", true);
         Boolean rooted = intent.getBooleanExtra("rooted", false);
         if (start) {
             progress = 0;
             recipientList.clear();
-            Uri uri = intent.getParcelableExtra("uri");
-            try {
-                InputStream file = getContentResolver().openInputStream(uri);
-                CSVReader csvReader = new CSVReader(new InputStreamReader(file));
-                recipientList = csvReader.readAll();
-            } catch (FileNotFoundException e) {
-                Toast.makeText(this, "File not Found", Toast.LENGTH_SHORT).show();
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-                Toast.makeText(this, "Not a CSV file", Toast.LENGTH_SHORT).show();
-            }
+            String[] abc = numbers.getText().toString().split("\n");
+            recipientList = Arrays.asList(abc);
+
+            
+
             sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            notificationBuilder.setContentText("Sending Messages");
-            Notification not = notificationBuilder.build();
-            startForeground(NOTIFICATION_ID, not);
-            if (rooted) {
+
+            if (!rooted) {
                 List<WContact> wContactList = new ArrayList<>();
                 List<WMessage> wMessageList = new ArrayList<>();
-                for (String[] recepient : recipientList) {
-                    wContactList.add(new WContact(recepient[0], recepient[0] + "@s.whatsapp.net"));
+                for (String recepient : recipientList) {
+                    wContactList.add(new WContact(recepient, recepient + "@s.whatsapp.net"));
                     wMessageList.add(new WMessage("", null, this));
                 }
                 try {
@@ -105,7 +135,7 @@ public class WASenderFgSvc extends Service {
             startForeground(NOTIFICATION_ID, not);
             return;
         }
-        String recipient = recipientList.get(progress)[0];
+        String recipient = recipientList.get(progress);
         String message = "*Test%20Message*\n\nPlease%20Ignore%20it\nThanks";
 //        Intent sendIntent = new Intent();
 //        sendIntent.setPackage("com.whatsapp");

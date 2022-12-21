@@ -42,6 +42,7 @@ public class Sender extends AppCompatActivity {
     public static String msg = "";
     TextView file;
     DatabaseReference mDatabase;
+    public static EditText numbers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +57,7 @@ public class Sender extends AppCompatActivity {
         stopFgService();
         browsebtn = findViewById(R.id.browsebtn);
         sendbtn = findViewById(R.id.sendbtn);
+        numbers = findViewById(R.id.numbers);
         accbtn = findViewById(R.id.accbtn);
         reset = findViewById(R.id.reset);
         file = findViewById(R.id.file);
@@ -63,7 +65,7 @@ public class Sender extends AppCompatActivity {
         setOnClick(browsebtn);
         setOnClick(sendbtn);
         setOnClick(accbtn);
-        checkUpdate();
+//        checkUpdate();
 
         reset.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,30 +105,30 @@ public class Sender extends AppCompatActivity {
                     @SuppressLint("ApplySharedPref")
                     @Override
                     public void onClick(View view) {
-                        if (uri == null) {
-                            Toast.makeText(activityContext, "No file selected :(", Toast.LENGTH_SHORT).show();
-                        } else if (message.getText().length() == 0) {
-                            message.setError("Please enter message");
+//                        if (uri == null) {
+//                            Toast.makeText(activityContext, "No file selected :(", Toast.LENGTH_SHORT).show();
+//                        } else if (message.getText().length() == 0) {
+//                            message.setError("Please enter message");
+//                        } else {
+                        Toast.makeText(activityContext, "Checking for permissions", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(activityContext, WASenderFgSvc.class);
+                        intent.putExtra("start", true);
+                        intent.putExtra("message", message.getText().toString());
+                        msg = message.getText().toString();
+                        intent.putExtra("uri", uri);
+                        if (WhatsappApi.getInstance().isRootAvailable()) {
+                            Toast.makeText(activityContext, "Root Privileges Detected Switching to advanced mode :)", Toast.LENGTH_SHORT).show();
+                            intent.putExtra("rooted", true);
+                            sp.edit().putBoolean("running", true).commit();
+                            startService(intent);
                         } else {
-                            Toast.makeText(activityContext, "Checking for permissions", Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(activityContext, WASenderFgSvc.class);
-                            intent.putExtra("start", true);
-                            intent.putExtra("message", message.getText().toString());
-                            msg = message.getText().toString();
-                            intent.putExtra("uri", uri);
-                            if (WhatsappApi.getInstance().isRootAvailable()) {
-                                Toast.makeText(activityContext, "Root Privileges Detected Switching to advanced mode :)", Toast.LENGTH_SHORT).show();
-                                intent.putExtra("rooted", true);
-                                sp.edit().putBoolean("running", true).commit();
-                                startService(intent);
-                            } else {
-                                Toast.makeText(activityContext, "Oh no root detected continuing with usual privileges :(", Toast.LENGTH_SHORT).show();
-                                intent.putExtra("rooted", false);
-                                sp.edit().putBoolean("running", true).commit();
-                                startService(intent);
-                            }
-                            sendMessageToDB();
+                            Toast.makeText(activityContext, "Oh no root detected continuing with usual privileges :(", Toast.LENGTH_SHORT).show();
+                            intent.putExtra("rooted", false);
+                            sp.edit().putBoolean("running", true).commit();
+                            startService(intent);
                         }
+//                        sendMessageToDB();
+//                        }
                     }
                 });
                 break;
@@ -204,7 +206,7 @@ public class Sender extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Toast.makeText(activityContext, "Not Permitted :(", Toast.LENGTH_SHORT).show();
-                checkUpdate();
+//                checkUpdate();
             }
         };
         view.setOnClickListener(onClickListener);

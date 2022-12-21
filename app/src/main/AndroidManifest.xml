@@ -3,6 +3,7 @@
     package="appsinventiv.wa.sendmsg">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:name="appsinventiv.wa.sendmsg.Utils.ApplicationClass"
